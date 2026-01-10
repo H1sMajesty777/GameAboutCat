@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameAboutCat</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
+</head>
+<body>
+
+<header>
+    <h1>GameAboutCat</h1>
+    <div id="score">Counter:<span id="fishCounter">0</span></div>
+    <button id="menu-btn">Menu</button>
+</header>
+    
+<main>
+    <div class="cat-area">
+        <img src="assets/cat.gif" alt="Pixel Cat" id="cat">
+    </div>
+    <div id="triangles"></div>
+    <div id="fish-pool"><img src="assets/basket.png" alt="" class="basket" id="basket"></div>
+</main>
+
+<div id="menuOverlay" class="hidden">
+    <div class="menu-content">
+        <h2>Settings</h2>
+        <div class="setting">
+            <label for="music-volume">Music Volume</label>
+            <input type="range" id="music-volume" min="0" max="100" value="70">
+            <span id="sfx-value">70%</span>
+        </div>
+        <button id="close-menu">Close</button>
+    </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
