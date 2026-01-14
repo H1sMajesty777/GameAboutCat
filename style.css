@@ -4,14 +4,14 @@
     box-sizing: border-box;
 }
 
-@font-face {
+@font-face{
     font-family: 'MyCustomFont';
     src: url('font/MyCustomFont.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
 }
 
-body {
+body{
     background-color: #FF8C00;
     height: 100vh;
     display: flex;
@@ -22,7 +22,7 @@ body {
 }
 
 /*---------Header---------*/
-header {
+header{
     height: 80px;
     display: flex;
     align-items: center;
@@ -32,12 +32,12 @@ header {
     background-color: rgba(0, 0, 0, 0.1);
 }
 
-header h1 {
+header h1{
     font-size: 36px;
     color: aliceblue;
 }
 
-#score {
+#score{
     font-size: 24px;
     color: aliceblue;
     background-color: rgba(0, 0, 0, 0.2);
@@ -45,7 +45,7 @@ header h1 {
     border-radius: 10px;
 }
 
-#fishCounter {
+#fishCounter{
     font-weight: 900;
     margin-left: 10px;
     color: #FFD700;
@@ -62,8 +62,9 @@ header h1 {
     font-family: 'MyCustomFont', sans-serif;
 }
 
-#menu-btn:hover {
+#menu-btn:hover{
     background-color: rgba(255, 255, 255, 0.3);
+    scale: 1.1;
 }
 
 /*---------Main Zone---------*/
@@ -74,7 +75,7 @@ main {
 }
 
 /*----------Cat Zone---------*/
-.cat-area {
+.cat-area{
     position: absolute;
     top: 50%;
     left: 50%;
@@ -85,7 +86,7 @@ main {
     overflow: hidden;
 }
 
-.cat-area img {
+.cat-area img{
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -94,7 +95,7 @@ main {
 }
 
 /*------JavaScripts Containers--------*/
-#triangles {
+#triangles{
     position: absolute;
     top: 0;
     left: 0;
@@ -104,7 +105,7 @@ main {
     z-index: 1;
 }
 
-.triangle {
+.triangle{
     width: 150px;
     height: 450px;
     position: absolute;
@@ -119,7 +120,7 @@ main {
 
 #fish-pool {
     position: absolute;
-    bottom: 20px;
+    bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -149,7 +150,7 @@ main {
 }
 
 .fish:hover{
-    transform: scale(1.1);
+    transform: scale(1.2);
 }
 
 .fish.dragging{
@@ -160,25 +161,20 @@ main {
 }
 
 /*--------Menu Settings----------*/
-#menu-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+#menuOverlay {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 10px;
     z-index: 1000;
 }
 
 .menu-content {
-    background-color: #333;
+    background-color: orange;
     padding: 30px;
     border-radius: 15px;
     min-width: 400px;
-    border: 3px solid #00adb5;
+    border: 3px solid white;
     color: white;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
 }
@@ -199,15 +195,80 @@ main {
     display: block;
     margin: 20px auto 0;
     padding: 10px 30px;
-    background-color: #444;
+    background-color: orange;
     color: white;
-    border: 2px solid #00adb5;
+    border: 2px solid white;
     border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
     font-family: 'MyCustomFont', sans-serif;
 }
 
+#menu-overlay {
+    transition: opacity 0.3s ease;
+}
+
 .hidden {
     display: none !important;
+}
+
+.menu-content {
+    position: relative;
+    z-index: 1001;
+}
+.menu-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+#music-toggle {
+    margin: 10px auto 0;
+    padding: 10px 30px;
+    background-color: orange;
+    color: white;
+    border: 2px solid white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-family: 'MyCustomFont', sans-serif;
+}
+
+#music-toggle:hover{
+    scale: 1.1;
+}
+#close-menu:hover{
+    scale: 1.1;
+}
+
+
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 180px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    outline: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 4px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 15px;
+    height: 10px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid rgba(34, 33, 33, 0.6);
+    transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    border-color: rgba(255, 255, 255, 0.5);
 }

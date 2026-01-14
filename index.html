@@ -12,7 +12,26 @@
 <header>
     <h1>GameAboutCat</h1>
     <div id="score">Counter:<span id="fishCounter">0</span></div>
-    <button id="menu-btn">Menu</button>
+    <section>
+            <div class="menu-wrapper">
+                <button id="menu-btn">Menu</button>
+                <div id="menuOverlay" class="hidden">
+                    <div class="menu-content">
+                        <h2>Settings</h2>
+                        <div class="setting">
+                            <label for="music-volume">Music Volume</label>
+                            <input type="range" id="music-volume" min="0" max="100" value="70">
+                            <span id="sfx-value">70%</span>
+                        </div>
+                        <div class="settings-item">
+                            <label>Музыка:</label>
+                            <button id="music-toggle" class="music-btn">Выкл</button>
+                        </div>
+                        <button id="close-menu">Close</button>
+                    </div>
+                </div>
+            </div>
+    </section>
 </header>
     
 <main>
@@ -22,19 +41,6 @@
     <div id="triangles"></div>
     <div id="fish-pool"><img src="assets/basket.png" alt="" class="basket" id="basket"></div>
 </main>
-
-<div id="menuOverlay" class="hidden">
-    <div class="menu-content">
-        <h2>Settings</h2>
-        <div class="setting">
-            <label for="music-volume">Music Volume</label>
-            <input type="range" id="music-volume" min="0" max="100" value="70">
-            <span id="sfx-value">70%</span>
-        </div>
-        <button id="close-menu">Close</button>
-    </div>
-</div>
-
 <script src="game.js"></script>
 </body>
 </html>
