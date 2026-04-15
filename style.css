@@ -12,7 +12,7 @@
 }
 
 body{
-    background-color: #FF8C00;
+    background-color: rgb(255, 140, 0);
     height: 100vh;
     display: flex;
     flex-direction: column;
@@ -49,6 +49,7 @@ header h1{
     font-weight: 900;
     margin-left: 10px;
     color: #FFD700;
+    image-rendering: pixelated;
 }
 
 #menu-btn {
@@ -74,8 +75,8 @@ main {
     overflow: hidden;
 }
 
-/*----------Cat Zone---------*/
-.cat-area{
+/*----------Cat Zone (Многоспрайтовый кот)---------*/
+.cat-area {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -83,15 +84,121 @@ main {
     width: 300px;
     height: 300px;
     z-index: 10;
-    overflow: hidden;
+    user-select: none;
+    image-rendering: pixelated;
 }
 
-.cat-area img{
+.cat-part {
+    position: absolute;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+.cat-body {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    image-rendering: pixelated;
+    z-index: 1;
+}
+
+.cat-head {
+    top: 1%;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
     pointer-events: none;
+}
+
+.cat-eyes {
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+}
+
+#cat-eyes-blink {
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+}
+
+.cat-ear {
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.ear-hitbox {
+    position: absolute;
+    z-index: 100;
+    opacity: 0.1;
+    cursor: pointer;
+}
+
+.head-hitbox {
+    position: absolute;
+    z-index: 101;
+    opacity: 0;
+    cursor: pointer;
+    top: 15%;
+    left: 28%;
+    width: 40%;
+    height: 20%;
+    border-radius: 100% 100% 40% 40%;
+}
+
+.head-hitbox:hover {
+    opacity: 0.5;
+}
+
+.ear-hitbox:hover {
+    opacity: 0.3;
+}
+
+.ear-hitbox-left {
+    top: 3%;
+    left: 16%;
+    width: 20%;
+    height: 25%;
+    border-radius: 50% 100% 40% 40%;
+}
+
+.ear-hitbox-right {
+    top: 3%;
+    right: 19%;
+    width: 20%;
+    height: 25%;
+    border-radius: 100% 50% 40% 40%;
+}
+
+.cat-ear-left, .cat-ear-right {
+    top: 0;
+    left: 0;
+    transform-origin: bottom center;
+}
+
+.cat-mouth {
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    transition: none !important;
+}
+
+.cat-tail {
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    transform-origin: left center;
+    pointer-events: none;
+}
+
+.tail-hitbox {
+    position: absolute;
+    z-index: 100;
+    cursor: pointer;
+    top: 60%;
+    right: 5%;
+    width: 20%;
+    height: 35%;
+    border-radius: 100% 50% 40% 40%;
 }
 
 /*------JavaScripts Containers--------*/
@@ -116,7 +223,6 @@ main {
 }
 
 .triangle.even { opacity: 0.8 }
-
 
 #fish-pool {
     position: absolute;
@@ -216,6 +322,7 @@ main {
     position: relative;
     z-index: 1001;
 }
+
 .menu-wrapper {
     position: relative;
     display: inline-block;
@@ -236,10 +343,10 @@ main {
 #music-toggle:hover{
     scale: 1.1;
 }
+
 #close-menu:hover{
     scale: 1.1;
 }
-
 
 input[type="range"] {
     -webkit-appearance: none;

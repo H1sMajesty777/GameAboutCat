@@ -35,12 +35,49 @@
 </header>
     
 <main>
-    <div class="cat-area">
-        <img src="assets/cat.gif" alt="Pixel Cat" id="cat">
+    <!-- Многоспрайтовый кот -->
+    <div class="cat-area" id="cat-area">
+        <!-- Тело -->
+        <img src="assets/cat_parts/body.png" class="cat-part cat-body" id="cat-body">
+        
+        <!-- Голова -->
+        <div class="head-hitbox" id="head-hitbox"></div>
+        <img src="assets/cat_parts/head.png" class="cat-part cat-head" id="cat-head">
+        
+        <!-- Глазки -->
+        <div>
+            <img src="assets/cat_parts/eyes.png" class="cat-part cat-eyes" id="cat-eyes">
+            <img src="assets/cat_parts/eyes_pupils.png" class="cat-part cat-eyes" id="cat-eyes-pupils">
+        </div>
+        <img src="assets/cat_parts/eyes_blink.png" class="cat-part cat-eyes-blink hidden" id="cat-eyes-blink">
+        <img src="assets/cat_parts/eyes_sad.png" class="cat-part cat-eyes hidden" id="cat-eyes-sad">
+        <img src="assets/cat_parts/mouth_happy.png" class="cat-part cat-mouth hidden" id="cat-mouth-happy">
+        <img src="assets/cat_parts/eyes_angry.png" class="cat-part cat-eyes hidden" id="cat-eyes-angry">
+        
+        <!-- Ушки -->
+        <div>
+            <div class="ear-hitbox ear-hitbox-left" data-ear="left"></div>
+            <div class="ear-hitbox ear-hitbox-right" data-ear="right"></div>
+
+            <img src="assets/cat_parts/ear_left.png" class="cat-part cat-ear cat-ear-left" id="cat-ear-left">
+            <img src="assets/cat_parts/ear_right.png" class="cat-part cat-ear cat-ear-right" id="cat-ear-right">
+        </div>
+
+        <!-- Ротик -->
+        <img src="assets/cat_parts/mouth.png" class="cat-part cat-mouth" id="cat-mouth">
+        <img src="assets/cat_parts/mouth_angry.png" class="cat-part cat-mouth hidden" id="cat-mouth-angry">
+        <img src="assets/cat_parts/mouth_happy.png" class="cat-part cat-mouth hidden" id="cat-mouth-happy">
+        <img src="assets/cat_parts/mouth_sad.png" class="cat-part cat-mouth hidden" id="cat-mouth-sad">
+        
+        <!-- Хвостик -->
+        <div class="tail-hitbox"></div>
+        <img src="assets/cat_parts/tail.gif" class="cat-part cat-tail" alt="" id="cat-tail">
     </div>
+    
     <div id="triangles"></div>
     <div id="fish-pool"><img src="assets/basket.png" alt="" class="basket" id="basket"></div>
 </main>
+
 <script src="game.js"></script>
 </body>
-</html>
+</html>style.css

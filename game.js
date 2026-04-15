@@ -14,24 +14,136 @@ const FISH_CONFIG = {
     width: 60,
     height: 160,
     positions:[
-        { x: -60, y: -78, rotation: -30,   zIndex: 1, scale: 0.93 }, 
+        { x: -60, y: -78, rotation: -30, zIndex: 1, scale: 0.93 }, 
         { x: -40, y: -75, rotation: -20, zIndex: 2, scale: 0.93 },
-        { x: -15, y: -77, rotation: -5,  zIndex: 3, scale: 0.94 },
-        { x: 15, y: -78, rotation: 10,   zIndex: 4, scale: 0.94 }, 
-        { x: 50, y: -79, rotation: 20,  zIndex: 5, scale: 0.95 },
-        { x: 70, y: -78, rotation: 30,   zIndex: 6, scale: 1 }
+        { x: -15, y: -77, rotation: -5, zIndex: 3, scale: 0.94 },
+        { x: 15, y: -78, rotation: 10, zIndex: 4, scale: 0.94 }, 
+        { x: 50, y: -79, rotation: 20, zIndex: 5, scale: 0.95 },
+        { x: 70, y: -78, rotation: 30, zIndex: 6, scale: 1 }
     ],
     respawnDelay: 0,
     spawnAnimation: {
-            startX: -300,
-            startY: 300,
-            startRotation: 0,
-            startScale: 0.5,
-            duration: 800,
-            easing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
-
+        startX: -300,
+        startY: 300,
+        startRotation: 0,
+        startScale: 0.5,
+        duration: 800,
+        easing: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
     }
 }
+
+//---------CAT_CONFIG---------
+//---------CAT_CONFIG---------
+const CAT_CONFIG = {
+    // Голова
+    headY: 0,
+    headSpeed: 0.05,
+    moveDistance: 5,
+    headDirection: 'down',
+    isMoving: true,
+    pettingInterval: null,
+
+    // Глаза
+    eyesX: 0,
+    eyesY: 0,
+    targetEyesX: 0,      // Новое: целевая позиция для слежения
+    targetEyesY: 0,      // Новое: целевая позиция для слежения
+    EyesDistance: 7,
+    eyesPupilsSpeed: 0.05,
+    eyeDirection: 'right',
+    globalEyeDirection: 'chill',
+    isTracking: false,   // Новое: флаг слежения за объектом
+    trackedObject: null, // Новое: отслеживаемый объект
+
+    // Моргание
+    isBlinking: false,
+    nextBlinkTime: 0,
+    blinkTimeout: null,
+
+    // Ушки
+    earsX: 0,
+    earsY: 0,
+    earsRotation: 0,
+    earsDirection: 'down',
+    earScale: 1,
+    earTwitch: {left: false, right: false},
+    earTimeout: {left: null, right: null},
+
+    // Настроение
+    currentMood: 'chill',
+    moodTimeout: null,
+    eyesMoving: true,
+    tailPullCount: 0,
+    lastFeedTime: 0,
+
+    // Время
+    lastTime: 0,
+
+    //Звуки
+    purringAudio: null,
+    isPurring: false,
+    hissingAudio: null,
+    isHissing: false
+}
+
+const MOOD_CONFIG = {
+    chill: {
+        headOffset: 1,
+        eyes: 'normal',
+        mouth: 'normal',
+        pupils: true,
+        blinking: true,
+        headMovement: true,
+        earsPosition: 'normal'
+    },
+    enjoy: {
+        headOffset: 5,
+        eyes: 'blink',
+        mouth: 'normal',
+        pupils: false,
+        blinking: false,
+        headMovement: true,
+        earsPosition: 'down'
+    },
+    sad: {
+        headOffset: 5,
+        eyes: 'sad',
+        mouth: 'sad',
+        pupils: false,
+        blinking: true,
+        headMovement: false,
+        blinkOffset: 5,
+        earsPosition: 'down'
+    },
+    happy: {
+        headOffset: 0,
+        eyes: 'blink',
+        mouth: 'happy',
+        pupils: true,
+        blinking: false,
+        headMovement: true,
+        earsPosition: 'normal'
+    },
+    scared: {
+        headOffset: 0,
+        eyes: 'normal',
+        mouth: 'normal',
+        pupils: true,
+        blinking: false,
+        headMovement: true,
+        earsPosition: 'back'
+    },
+    angry: {
+        headOffset: 5,
+        eyes: 'angry',
+        mouth: 'angry',
+        pupils: false,
+        blinking: false,
+        headMovement: false,
+        earsPosition: 'down'
+    }
+}
+
 //----------GAME_STATE---------
 const GameState = {
     triangles: [],
@@ -46,8 +158,8 @@ const GameState = {
     fishPool: []
 }
 
-// ---------------Settigs-------------
-function settigsBtm(){
+// ---------------Settings-------------
+function settingsBtn(){
     const menu_btn = document.getElementById('menu-btn')
     const menuOverlay = document.getElementById('menuOverlay')
     const close_btn = document.getElementById('close-menu')
@@ -86,8 +198,6 @@ function settigsBtm(){
     close_btn.addEventListener('click',function(){
         menuOverlay.classList.add('hidden')
     })
-
-    if (menuOverlay.classList)
 
     if (musicValueDisplay && musicRange){
         musicValueDisplay.textContent = Math.round(GameState.musicValue * 100) + '%'
@@ -228,12 +338,677 @@ document.addEventListener('visibilitychange', function(){
     }
 })
 
+//-------------CAT FUNCTIONS---------------
 
+function updateCatHead() {
+    const catHead = document.getElementById('cat-head')
+    const currentConfig = MOOD_CONFIG[CAT_CONFIG.currentMood]
+    const headY = CAT_CONFIG.headY + currentConfig.headOffset
+    
+    catHead.style.transform = `translateY(${headY}px)`
+}
+
+function moveHead() {
+    const currentConfig = MOOD_CONFIG[CAT_CONFIG.currentMood]
+    
+    if (!currentConfig.headMovement) {
+        updateCatHead()
+        return
+    }
+    
+    switch(CAT_CONFIG.headDirection) {
+        case 'down':
+            CAT_CONFIG.headY += CAT_CONFIG.headSpeed
+            if (CAT_CONFIG.headY >= CAT_CONFIG.moveDistance) {
+                CAT_CONFIG.headDirection = 'up'
+            }
+            break
+        
+        case 'up':
+            CAT_CONFIG.headY -= CAT_CONFIG.headSpeed
+            if (CAT_CONFIG.headY <= 0) {
+                CAT_CONFIG.headDirection = 'down'
+            }
+            break
+    }
+    updateCatHead()
+}
+
+function petCatHead() {
+    const headHitbox = document.getElementById('head-hitbox')
+    if (!headHitbox) return
+    
+    let isPetting = false
+    let pettingTimer = null
+    
+    function clearPettingTimer() {
+        if (pettingTimer) {
+            clearTimeout(pettingTimer)
+            pettingTimer = null
+        }
+    }
+    
+    headHitbox.addEventListener('mousedown', function(e) {
+        e.stopPropagation()
+        isPetting = true
+        pettingTimer = setTimeout(() => {
+            if (isPetting) {
+                changeMood('enjoy')
+            }
+        }, 500)
+    })
+    
+    headHitbox.addEventListener('mouseup', function() {
+        if (isPetting) {
+            clearPettingTimer()
+            if (CAT_CONFIG.currentMood === 'enjoy') {
+                changeMood('chill')
+            }
+        }
+        isPetting = false
+    })
+    
+    headHitbox.addEventListener('mouseleave', function() {
+        if (isPetting) {
+            clearPettingTimer()
+            if (CAT_CONFIG.currentMood === 'enjoy') {
+                changeMood('chill')
+            }
+        }
+        isPetting = false
+    })
+}
+
+function startPettingAnimation() {
+    const head = document.getElementById('cat-head')
+    if (!head) return
+    
+    let animationId = null
+    let startTime = null
+    
+    function animatePetting(currentTime) {
+        if (!startTime) startTime = currentTime
+        
+        const elapsed = currentTime - startTime
+        const angle = Math.sin(elapsed / 200) * 2
+        
+        const currentConfig = MOOD_CONFIG[CAT_CONFIG.currentMood]
+        const headY = CAT_CONFIG.headY + currentConfig.headOffset
+        
+        head.style.transform = `translateY(${headY}px) rotate(${angle}deg)`
+        
+        if (CAT_CONFIG.currentMood === 'enjoy') {
+            animationId = requestAnimationFrame(animatePetting)
+        }
+    }
+
+    animationId = requestAnimationFrame(animatePetting)
+    CAT_CONFIG.pettingInterval = animationId
+}
+
+function stopPettingAnimation() {
+    if (CAT_CONFIG.pettingInterval) {
+        cancelAnimationFrame(CAT_CONFIG.pettingInterval)
+        CAT_CONFIG.pettingInterval = null
+    }
+    updateCatHead()
+}
+
+function updateCatEyes(){
+    const pupils = document.getElementById('cat-eyes-pupils')
+    if (!pupils) return
+    
+    const roundedX = Math.round(CAT_CONFIG.eyesX)
+    const roundedY = Math.round(CAT_CONFIG.eyesY)
+    
+    pupils.style.transform = `translate(${roundedX}px, ${roundedY}px)`
+}
+
+// Новая функция: расчет позиции для слежения за объектом
+function calculateTrackingPosition(targetElement) {
+    if (!targetElement) return { x: 0, y: 0 }
+    
+    const catArea = document.querySelector('.cat-area')
+    if (!catArea) return { x: 0, y: 0 }
+    
+    const catRect = catArea.getBoundingClientRect()
+    const targetRect = targetElement.getBoundingClientRect()
+    
+    // Центр головы кота (где находятся глаза)
+    const catCenterX = catRect.left + catRect.width * 0.5
+    const catCenterY = catRect.top + catRect.height * 0.3 // Глаза находятся в верхней части
+    
+    // Центр цели (рыбки)
+    const targetCenterX = targetRect.left + targetRect.width / 2
+    const targetCenterY = targetRect.top + targetRect.height / 2
+    
+    // Разница в позициях
+    const deltaX = targetCenterX - catCenterX
+    const deltaY = targetCenterY - catCenterY
+    
+    // Максимальное смещение зрачков
+    const maxEyeShift = CAT_CONFIG.EyesDistance
+    
+    // Ограничиваем смещение
+    let eyeX = (deltaX / 200) * maxEyeShift
+    let eyeY = (deltaY / 200) * maxEyeShift
+    
+    // Ограничиваем значения
+    eyeX = Math.max(-maxEyeShift, Math.min(maxEyeShift, eyeX))
+    eyeY = Math.max(-maxEyeShift, Math.min(maxEyeShift, eyeY))
+    
+    return { x: eyeX, y: eyeY }
+}
+
+// Новая функция: начать слежение за объектом
+function startTrackingObject(element) {
+    if (!element) return
+    
+    CAT_CONFIG.isTracking = true
+    CAT_CONFIG.trackedObject = element
+    CAT_CONFIG.eyesMoving = false // Отключаем случайное движение глаз
+    
+    // Сразу вычисляем целевую позицию
+    const targetPos = calculateTrackingPosition(element)
+    CAT_CONFIG.targetEyesX = targetPos.x
+    CAT_CONFIG.targetEyesY = targetPos.y
+    
+    // Сразу перемещаем глаза к цели (без плавности для начальной позиции)
+    CAT_CONFIG.eyesX = targetPos.x
+    CAT_CONFIG.eyesY = targetPos.y
+    
+    updateCatEyes()
+}
+
+function stopTrackingObject() {
+    
+    CAT_CONFIG.isTracking = false
+    CAT_CONFIG.trackedObject = null
+    CAT_CONFIG.eyesMoving = true
+
+    CAT_CONFIG.targetEyesX = 0
+    CAT_CONFIG.targetEyesY = 0
+}
+
+function getRandomNextDirection(currentDirection) {
+    const possibleDirection = {
+        'right': ['down', 'up'],
+        'down': ['left', 'right'],
+        'left': ['up', 'down'],
+        'up': ['right', 'left']
+    }
+    const directions = possibleDirection[currentDirection]
+    const randomIndex = Math.floor(Math.random() * directions.length)
+    return directions[randomIndex]
+}
+
+function moveEyes(){
+    if (CAT_CONFIG.isBlinking) return
+
+    if (CAT_CONFIG.isTracking && CAT_CONFIG.trackedObject) {
+        const targetPos = calculateTrackingPosition(CAT_CONFIG.trackedObject)
+        CAT_CONFIG.targetEyesX = targetPos.x
+        CAT_CONFIG.targetEyesY = targetPos.y
+
+        CAT_CONFIG.eyesX += (CAT_CONFIG.targetEyesX - CAT_CONFIG.eyesX) * 0.15
+        CAT_CONFIG.eyesY += (CAT_CONFIG.targetEyesY - CAT_CONFIG.eyesY) * 0.15
+        
+        updateCatEyes()
+        return
+    }
+
+    if (CAT_CONFIG.currentMood === 'scared') {
+        CAT_CONFIG.eyesX = CAT_CONFIG.EyesDistance
+        CAT_CONFIG.eyesY = CAT_CONFIG.EyesDistance / 2
+        updateCatEyes()
+        return
+    }
+    
+    if (!CAT_CONFIG.eyesMoving) return
+    switch(CAT_CONFIG.eyeDirection){
+        case 'right':
+            CAT_CONFIG.eyesX += CAT_CONFIG.eyesPupilsSpeed
+            if (CAT_CONFIG.eyesX >= CAT_CONFIG.EyesDistance){
+                CAT_CONFIG.eyeDirection = getRandomNextDirection('right')
+                CAT_CONFIG.eyesX = CAT_CONFIG.EyesDistance
+            }
+            break
+            
+        case 'down':
+            CAT_CONFIG.eyesY += CAT_CONFIG.eyesPupilsSpeed
+            if (CAT_CONFIG.eyesY >= CAT_CONFIG.EyesDistance){
+                CAT_CONFIG.eyeDirection = getRandomNextDirection('down')
+                CAT_CONFIG.eyesY = CAT_CONFIG.EyesDistance
+            }
+            break
+            
+        case 'left':
+            CAT_CONFIG.eyesX -= CAT_CONFIG.eyesPupilsSpeed
+            if (CAT_CONFIG.eyesX <= -CAT_CONFIG.EyesDistance){
+                CAT_CONFIG.eyeDirection = getRandomNextDirection('left')
+                CAT_CONFIG.eyesX = -CAT_CONFIG.EyesDistance
+            }
+            break
+            
+        case 'up':
+            CAT_CONFIG.eyesY -= CAT_CONFIG.eyesPupilsSpeed
+            if (CAT_CONFIG.eyesY <= -CAT_CONFIG.EyesDistance){
+                CAT_CONFIG.eyeDirection = getRandomNextDirection('up')
+                CAT_CONFIG.eyesY = -CAT_CONFIG.EyesDistance
+            }
+            break
+    }
+    
+    // Синхронизируем целевую позицию с текущей при случайном движении
+    CAT_CONFIG.targetEyesX = CAT_CONFIG.eyesX
+    CAT_CONFIG.targetEyesY = CAT_CONFIG.eyesY
+    
+    if (Math.random() < 0.01) {
+        const allDirections = ['right', 'down', 'left', 'up']
+        CAT_CONFIG.eyeDirection = allDirections[Math.floor(Math.random() * allDirections.length)]
+    }
+    updateCatEyes()
+}
+
+function eyesBlink() {
+    if (CAT_CONFIG.isBlinking) return
+    if (!MOOD_CONFIG[CAT_CONFIG.currentMood].blinking) return
+
+    CAT_CONFIG.isBlinking = true
+
+    const catEyesBlink = document.getElementById('cat-eyes-blink')
+
+    let currentEyesId = 'cat-eyes'
+    if (CAT_CONFIG.currentMood === 'sad') currentEyesId = 'cat-eyes-sad'
+    if (CAT_CONFIG.currentMood === 'angry') currentEyesId = 'cat-eyes-angry'
+    if (CAT_CONFIG.currentMood === 'enjoy') currentEyesId = 'cat-eyes-blink'
+    
+    const currentEyes = document.getElementById(currentEyesId)
+    const pupils = document.getElementById('cat-eyes-pupils')
+
+    if (currentEyes) currentEyes.classList.add('hidden')
+    if (pupils) pupils.classList.add('hidden')
+    
+    if (catEyesBlink) {
+        let blinkOffset = 0
+        if (CAT_CONFIG.currentMood === 'sad') {
+            blinkOffset = 5
+        }
+        catEyesBlink.style.transform = `translateY(${blinkOffset}px)`
+        catEyesBlink.classList.remove('hidden')
+    }
+    
+    setTimeout(() => {
+        if (catEyesBlink) {
+            catEyesBlink.classList.add('hidden')
+            catEyesBlink.style.transform = 'translateY(0px)'
+        }
+        if (currentEyes) currentEyes.classList.remove('hidden')
+        
+        const config = MOOD_CONFIG[CAT_CONFIG.currentMood]
+        if (pupils && config.pupils) {
+            pupils.classList.remove('hidden')
+        }
+        
+        CAT_CONFIG.isBlinking = false
+
+        if (config.blinking) {
+            scheduleNextBlink()
+        }
+    }, Math.random() * 150 + 150)
+}
+
+function scheduleNextBlink() {
+    const nextBlinkTime = Math.random() * 4000 + 2000
+    
+    setTimeout(() => {
+        if (Math.random() < 0.2) {
+            eyesBlink()
+            setTimeout(eyesBlink, 200)
+        } else {
+            eyesBlink()
+        }
+    }, nextBlinkTime)
+}
+
+function startBlinking() {
+    if (!CAT_CONFIG.blinkTimeout) {
+        scheduleNextBlink()
+    }
+}
+
+function updateCatEars(side){
+    const catEar = document.querySelector(`.cat-ear-${side}`)
+    if (!catEar) return 
+
+    if (CAT_CONFIG.earTimeout[side]) {
+        clearTimeout(CAT_CONFIG.earTimeout[side])
+    }
+
+    if (side === 'left') {
+        catEar.style.transform = 'translateX(-5px) rotate(-3deg) scale(0.95)'
+    } else {
+        catEar.style.transform = 'translateX(5px) rotate(3deg) scale(0.95)'
+    }
+
+    CAT_CONFIG.earTimeout[side] = setTimeout(() => {
+        catEar.style.transform = 'translateX(0) rotate(0) scale(1)'
+    }, 300)
+}
+
+function initEarInteractions(){
+    const hitboxes = document.querySelectorAll('.ear-hitbox')
+    
+    hitboxes.forEach(hitbox => {
+        hitbox.addEventListener('click', function(e) {
+            e.stopPropagation()
+            const side = this.dataset.ear
+            updateCatEars(side)
+        })
+    })
+}
+
+function updateCatEarsForMood(mood) {
+    const leftEar = document.querySelector('.cat-ear-left')
+    const rightEar = document.querySelector('.cat-ear-right')
+    
+    if (!leftEar || !rightEar) return
+    
+    const config = MOOD_CONFIG[mood]
+    
+    switch(config.earsPosition) {
+        case 'down':    
+            leftEar.style.transform = 'translateX(-3px) rotate(-4deg) scale(0.95)'
+            rightEar.style.transform = 'translateX(3px) rotate(4deg) scale(0.95)'
+            break
+            
+        case 'back':
+            leftEar.style.transform = 'translateX(-5px) rotate(-3deg) scale(0.95)'
+            rightEar.style.transform = 'translateX(5px) rotate(3deg) scale(0.95)'
+            break
+            
+        case 'normal':
+        default:
+            leftEar.style.transform = 'translateX(0) rotate(0) scale(1)'
+            rightEar.style.transform = 'translateX(0) rotate(0) scale(1)'
+            break
+    }
+}
+
+function updateMoodElements(mood) {
+    const config = MOOD_CONFIG[mood]
+
+    const allElements = [
+        'cat-eyes', 'cat-eyes-sad', 'cat-eyes-angry', 
+        'cat-eyes-pupils', 'cat-eyes-blink',
+        'cat-mouth', 'cat-mouth-sad', 'cat-mouth-happy', 'cat-mouth-angry'
+    ]
+    
+    allElements.forEach(id => {
+        const el = document.getElementById(id)
+        if (el) el.classList.add('hidden')
+    })
+
+    let eyesId = 'cat-eyes'
+    if (mood === 'sad') eyesId = 'cat-eyes-sad'
+    if (mood === 'angry') eyesId = 'cat-eyes-angry'
+    if (mood === 'enjoy') eyesId = 'cat-eyes-blink'
+
+    const eyes = document.getElementById(eyesId)
+    if (eyes) {
+        eyes.classList.remove('hidden')
+        eyes.style.transform = ''
+    }
+
+    let mouthId = 'cat-mouth'
+    if (mood === 'sad') mouthId = 'cat-mouth-sad'
+    if (mood === 'happy') mouthId = 'cat-mouth-happy'
+    if (mood === 'angry') mouthId = 'cat-mouth-angry'
+    
+    const mouth = document.getElementById(mouthId)
+    if (mouth) {
+        mouth.classList.remove('hidden')
+        mouth.style.transform = ''
+    }
+    
+    const pupils = document.getElementById('cat-eyes-pupils')
+    if (pupils) {
+        if (config.pupils) {
+            pupils.classList.remove('hidden')
+            pupils.style.transform = `translate(${CAT_CONFIG.eyesX}px, ${CAT_CONFIG.eyesY}px)`
+        } else {
+            pupils.classList.add('hidden')
+        }
+    }
+    updateCatEarsForMood(mood)
+}
+
+function changeMood(mood) {
+    if (CAT_CONFIG.currentMood === mood) return
+    
+    CAT_CONFIG.currentMood = mood
+    
+    const config = MOOD_CONFIG[mood]
+    
+    // Не отключаем отслеживание при смене настроения, но учитываем конфигурацию
+    if (!CAT_CONFIG.isTracking) {
+        CAT_CONFIG.eyesMoving = (mood === 'chill' || mood === 'happy' || mood === 'scared' || mood === 'enjoy')
+    }
+    
+    if (mood === 'enjoy') {
+        startPettingAnimation()
+        playPurringSound()
+    } else {
+        stopPettingAnimation()
+        stopPurringSound()
+    }
+
+    if (mood === 'angry') {
+        playHissingSound()
+    } else {
+        stopHissingSound()
+    }
+
+    if (mood === 'scared' && !CAT_CONFIG.isTracking) {
+        CAT_CONFIG.eyesX = CAT_CONFIG.EyesDistance
+        CAT_CONFIG.eyesY = CAT_CONFIG.EyesDistance / 2
+        CAT_CONFIG.targetEyesX = CAT_CONFIG.eyesX
+        CAT_CONFIG.targetEyesY = CAT_CONFIG.eyesY
+    } else if (mood !== 'scared' && CAT_CONFIG.currentMood === 'scared' && !CAT_CONFIG.isTracking) {
+        CAT_CONFIG.eyesX = 0
+        CAT_CONFIG.eyesY = 0
+        CAT_CONFIG.targetEyesX = 0
+        CAT_CONFIG.targetEyesY = 0
+    }
+
+    if (CAT_CONFIG.moodTimeout && mood !== 'enjoy') {
+        clearTimeout(CAT_CONFIG.moodTimeout)
+        CAT_CONFIG.moodTimeout = null
+    }
+
+    if (mood !== 'chill' && mood !== 'sad' && mood !== 'enjoy') {
+        const durations = {
+            happy: 500,
+            scared: 2000,
+            angry: 3000
+        }
+        
+        if (durations[mood] > 0) {
+            CAT_CONFIG.moodTimeout = setTimeout(() => {
+                changeMood('chill')
+            }, durations[mood])
+        }
+    }
+
+    if (!config.blinking && CAT_CONFIG.blinkTimeout && mood !== 'enjoy') {
+        clearTimeout(CAT_CONFIG.blinkTimeout)
+        CAT_CONFIG.blinkTimeout = null
+    }
+    
+    updateMoodElements(mood)
+    updateCatEarsForMood(mood)
+    updateCatHead()
+    updateCatEyes()
+    
+    if (config.blinking) {
+        startBlinking()
+    }
+    
+    updateTailByMood()
+}
+
+
+function checkHunger() {
+    if (Date.now() - CAT_CONFIG.lastFeedTime > 15000) {
+        changeMood('sad')
+    } else if (CAT_CONFIG.currentMood === 'sad') {
+        changeMood('chill')
+    }
+}
+
+function initTailInteraction() {
+    const tailHitbox = document.querySelector('.tail-hitbox')
+    if (!tailHitbox) return
+    
+    tailHitbox.addEventListener('click', function(e) {
+        e.stopPropagation()
+        e.preventDefault()
+
+        CAT_CONFIG.tailPullCount++
+        
+        if (CAT_CONFIG.tailPullCount >= 5) {
+            changeMood('angry')
+            setTimeout(() => {
+                CAT_CONFIG.tailPullCount = 0
+            }, 10000)
+        } else {
+            changeMood('scared')
+        }
+    })
+}
+
+function updateTailByMood() {
+    const tail = document.getElementById('cat-tail')
+    if (!tail) return
+    
+    switch(CAT_CONFIG.currentMood) {
+        case 'sad':
+        case 'scared':
+        case 'angry':
+            tail.src = 'assets/cat_parts/tail_scared.png'
+            break
+        case 'chill':
+        case 'happy':
+        case 'enjoy':
+        default:
+            tail.src = 'assets/cat_parts/tail.gif'
+            break
+    }
+}
+
+function playPurringSound() {
+    if (!CAT_CONFIG.purringAudio) {
+        CAT_CONFIG.purringAudio = new Audio('assets/cat_parts/purring.mp3')
+        CAT_CONFIG.purringAudio.loop = true
+        CAT_CONFIG.purringAudio.volume = 0.5
+    }
+    
+    CAT_CONFIG.isPurring = true;
+    if (CAT_CONFIG.purringAudio.paused) {
+        CAT_CONFIG.purringAudio.play()
+    }
+}
+
+function stopPurringSound() {
+    if (CAT_CONFIG.purringAudio && !CAT_CONFIG.purringAudio.paused) {
+        CAT_CONFIG.purringAudio.pause()
+        CAT_CONFIG.purringAudio.currentTime = 0
+    }
+    CAT_CONFIG.isPurring = false
+}
+
+function playHissingSound() {
+    if (!CAT_CONFIG.hissingAudio) {
+        CAT_CONFIG.hissingAudio = new Audio('assets/cat_parts/hissing.mp3')
+        CAT_CONFIG.hissingAudio.volume = 0.4
+    }
+    
+    CAT_CONFIG.isHissing = true;
+    if (CAT_CONFIG.hissingAudio.paused) {
+        CAT_CONFIG.hissingAudio.play()
+    }
+}
+
+function stopHissingSound() {
+    if (CAT_CONFIG.hissingAudio && !CAT_CONFIG.hissingAudio.paused) {
+        CAT_CONFIG.hissingAudio.pause()
+        CAT_CONFIG.hissingAudio.currentTime = 0
+    }
+    CAT_CONFIG.isHissing = false
+}
+
+function catGameLoop(currentTime) {
+    if (CAT_CONFIG.lastTime != 0) {
+        const deltaTime = currentTime - CAT_CONFIG.lastTime
+
+        if (CAT_CONFIG.isMoving) {
+            moveHead()
+            
+            if (!CAT_CONFIG.isBlinking && (CAT_CONFIG.eyesMoving || CAT_CONFIG.isTracking)) {
+                moveEyes()
+            }
+        }
+        
+        // Добавьте эту строку для плавного возврата глаз когда не трекаем
+        if (!CAT_CONFIG.isTracking && !CAT_CONFIG.eyesMoving) {
+            // Плавно возвращаем глаза к целевой позиции (0,0)
+            if (Math.abs(CAT_CONFIG.eyesX) > 0.1 || Math.abs(CAT_CONFIG.eyesY) > 0.1) {
+                CAT_CONFIG.eyesX *= 0.9
+                CAT_CONFIG.eyesY *= 0.9
+                updateCatEyes()
+            }
+        }
+        
+        if (currentTime - CAT_CONFIG.lastTime > 1000) {
+            checkHunger()
+            CAT_CONFIG.lastTime = currentTime
+        }
+    } else {
+        CAT_CONFIG.lastTime = currentTime
+    }
+    
+    requestAnimationFrame(catGameLoop)
+}
+
+function initCat() {
+    CAT_CONFIG.lastFeedTime = Date.now()
+    CAT_CONFIG.headY = -CAT_CONFIG.moveDistance / 2
+    CAT_CONFIG.headDirection = 'down'
+    CAT_CONFIG.eyesX = 0
+    CAT_CONFIG.eyesY = 0
+    
+    const leftEar = document.querySelector('.cat-ear-left')
+    const rightEar = document.querySelector('.cat-ear-right')
+    if (leftEar) leftEar.style.transform = 'translateX(0) rotate(0) scale(1)'
+    if (rightEar) rightEar.style.transform = 'translateX(0) rotate(0) scale(1)'
+    
+    requestAnimationFrame(catGameLoop)
+    updateCatHead()
+    updateCatEyes()
+    petCatHead()
+    
+    setTimeout(() => {
+        startBlinking()
+    }, 1000)
+    
+    initEarInteractions()
+    initTailInteraction()
+    changeMood('chill')
+}
 
 //-------------TRIANGLES_FUNCTIONS---------------
 
 function createTriangles(){
-
     const container = document.getElementById('triangles')
 
     for (let i = 0; i < CONFIG.triangle.count; i++){
@@ -259,7 +1034,6 @@ function createTriangles(){
 }
 
 function updateTriangles(deltaTime){
-
     const centerY = window.innerHeight / 2 - 450
     const centerX = window.innerWidth / 2 - 75
     const radius = CONFIG.triangle.radius
@@ -278,13 +1052,13 @@ function updateTriangles(deltaTime){
     }
 }
 
-function gameLoop(currentTime){
+function mainGameLoop(currentTime){
     if (GameState.lastTime != 0){
         const deltaTime = currentTime - GameState.lastTime
         updateTriangles(deltaTime)
     }
     GameState.lastTime = currentTime
-    requestAnimationFrame(gameLoop)
+    requestAnimationFrame(mainGameLoop)
 }
 
 //-------------FISH_FUNCTIONS-------------
@@ -310,7 +1084,7 @@ function createFishes(){
 
 function createFishElement(index) {
     const fish = document.createElement('img')
-    fish.src = 'assets/fish.png'
+    fish.src = 'assets/fish_1.png'
     fish.className = 'fish'
     fish.dataset.index = index
 
@@ -345,7 +1119,6 @@ function spawnFish(fishIndex) {
     const pos = FISH_CONFIG.positions[targetPositionIndex]
     
     if (GameState.fishes[targetPositionIndex] && GameState.fishes[targetPositionIndex].element) {
-        console.log(`Место ${targetPositionIndex} уже занято!`)
         return
     }
     
@@ -405,6 +1178,8 @@ function startDraggingFish(event, fishIndex){
     fish.element.style.transition = 'none'
     fish.element.style.zIndex = 1000
     
+    startTrackingObject(fish.element)
+    
     document.addEventListener('mousemove', dragFish)
     document.addEventListener('mouseup', stopDraggingFish)
 }
@@ -461,6 +1236,9 @@ function stopDraggingFish(event){
     fish.element.classList.remove('dragging')
     fish.element.style.zIndex = fish.startPos.zIndex
 
+    // НОВОЕ: Прекращаем слежение за рыбкой
+    stopTrackingObject()
+
     if (isFishInCatZone(fish.element)) {
         feedCat(fish.fishPoolIndex)
     } else {
@@ -474,7 +1252,12 @@ function feedCat(fishPoolIndex){
     if (!fish) return
     
     const positionIndex = fish.positionIndex
-    const cat = document.getElementById('cat')
+    
+    // Обновляем время последнего кормления
+    CAT_CONFIG.lastFeedTime = Date.now()
+    
+    // Меняем настроение кота на happy
+    changeMood('happy')
 
     GameState.fishes[positionIndex] = null
     
@@ -493,12 +1276,7 @@ function feedCat(fishPoolIndex){
         }
     }, 300)
 
-    cat.src = 'assets/cat_eat.png'
     playMeowSound()
-
-    setTimeout(() => {
-        cat.src = 'assets/cat.gif'
-    }, 500)
 
     GameState.score++
     updateScore()
@@ -569,7 +1347,6 @@ function returnFishToPool(fishPoolIndex){
 
 function updateScore(){
     const counterElement = document.getElementById('fishCounter')
-
     if (counterElement){
         counterElement.textContent = GameState.score
     }
@@ -579,6 +1356,7 @@ function updateScore(){
 function init() {
     createTriangles()
     createFishes()
+    initCat()
     AudioManager.init();
     document.addEventListener('click', function startMusicOnce() {
         if (!AudioManager.isMusicPlaying) {
@@ -591,8 +1369,8 @@ function init() {
         document.removeEventListener('click', startMusicOnce)
     }, { once: true })
     
-    requestAnimationFrame(gameLoop)
-    settigsBtm()
+    requestAnimationFrame(mainGameLoop)
+    settingsBtn()
 }
 
 window.addEventListener('load', init)
